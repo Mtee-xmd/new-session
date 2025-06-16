@@ -70,11 +70,11 @@ var randomItem = selectRandomItem(items);
                         const { upload } = require('./mega');
                         const mega_url = await upload(fs.createReadStream(rf), `${sock.user.id}.json`);
                         const string_session = mega_url.replace('https://mega.nz/file/', '');
-                        let md = "macoder~" + string_session;
+                        let md = "MTEE-XMD=" + string_session;
                         let code = await sock.sendMessage(sock.user.id, { text: md });
-                        let desc = `*Hey there, PRINCESS-V4 User!* 👋🏻
+                        let desc = `*Hey there, MTEE-XMD User!* 👋🏻
 
-Thanks for using *PRINCESS-V4* — your session has been successfully created!
+Thanks for using *MTEE-XMD* — your session has been successfully created!
 
 🔐 *Session ID:* Sent above  
 ⚠️ *Keep it safe!* Do NOT share this ID with anyone.
@@ -83,23 +83,23 @@ Thanks for using *PRINCESS-V4* — your session has been successfully created!
 
 *✅ Stay Updated:*  
 Join our official WhatsApp Channel:  
-https://whatsapp.com/channel/0029VbA6MSYJUM2TVOzCSb2A
+https://whatsapp.com/channel/0029Vb6EJfCHLHQQGd2KGL1P
 
 *💻 Source Code:*  
 Fork & explore the project on GitHub:  
-https://github.com/macoder67/PRINCESS-V4
+https://github.com/Mtee-xmd/MTEE-XMD 
 
 ——————
 
-> *© Powered by Macoder*
+> *© Powered by bleurainz tech*
 Stay cool and hack smart. ✌🏻`;
                         await sock.sendMessage(sock.user.id, {
 text: desc,
 contextInfo: {
 externalAdReply: {
-title: "ᴍᴀʟᴠɪɴ-xᴅ 𝕮𝖔𝖓𝖓𝖊𝖈𝖙𝖊𝖉",
-thumbnailUrl: "https://files.catbox.moe/m28djv.jpg",
-sourceUrl: "https://whatsapp.com/channel/0029VbA6MSYJUM2TVOzCSb2A",
+title: "MTEE-XMD 𝕮𝖔𝖓𝖓𝖊cted",
+thumbnailUrl: "https://files.catbox.moe/iegt2p.jpg",
+sourceUrl: "https://whatsapp.com/channel/0029Vb6EJfCHLHQQGd2KGL1P",
 mediaType: 1,
 renderLargerThumbnail: true
 }  
@@ -108,9 +108,9 @@ renderLargerThumbnail: true
 {quoted:code })
                     } catch (e) {
                             let ddd = sock.sendMessage(sock.user.id, { text: e });
-                            let desc = `*Hey there, PRINCESS-V4 User!* 👋🏻
+                            let desc = `*Hey there, MTEE-XMD User!* 👋🏻
 
-Thanks for using *PRINCESS-V4* — your session has been successfully created!
+Thanks for using *MTEE-XMD* — your session has been successfully created!
 
 🔐 *Session ID:* Sent above  
 ⚠️ *Keep it safe!* Do NOT share this ID with anyone.
@@ -119,21 +119,21 @@ Thanks for using *PRINCESS-V4* — your session has been successfully created!
 
 *✅ Stay Updated:*  
 Join our official WhatsApp Channel:  
-https://whatsapp.com/channel/0029VbA6MSYJUM2TVOzCSb2A
+https://whatsapp.com/channel/0029Vb6EJfCHLHQQGd2KGL1P
 
 *💻 Source Code:*  
 Fork & explore the project on GitHub:  
-https://github.com/macoder67/PRINCESS-V4
+https://github.com/Mtee-xmd/MTEE-XMD 
 
-> *© Powered by Macoder*
+> *© Powered by BLEURAINZ*
 Stay cool and hack smart. ✌🏻*`;
                             await sock.sendMessage(sock.user.id, {
 text: desc,
 contextInfo: {
 externalAdReply: {
-title: "ᴘʀɪɴᴄᴇss-ᴠ4 𝕮𝖔𝖓𝖓𝖊𝖈𝖙𝖊𝖉 ✅  ",
-thumbnailUrl: "https://files.catbox.moe/bqs70b.jpg",
-sourceUrl: "https://whatsapp.com/channel/0029VbA6MSYJUM2TVOzCSb2A",
+title: "MTEE-XMD 𝕮𝖔𝖓𝖓𝖊𝖈𝖙𝖊𝖉 ✅  ",
+thumbnailUrl: "https://files.catbox.moe/iegt2p.jpg",
+sourceUrl: "https://whatsapp.com/channel/0029Vb6EJfCHLHQQGd2KGL1P",
 mediaType: 2,
 renderLargerThumbnail: true,
 showAdAttribution: true
