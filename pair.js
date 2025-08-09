@@ -3,166 +3,149 @@ const express = require('express');
 const fs = require('fs');
 let router = express.Router();
 const pino = require("pino");
-const { default: makeWASocket, useMultiFileAuthState, delay, Browsers, makeCacheableSignalKeyStore, getAggregateVotesInPollMessage, DisconnectReason, WA_DEFAULT_EPHEMERAL, jidNormalizedUser, proto, getDevice, generateWAMessageFromContent, fetchLatestBaileysVersion, makeInMemoryStore, getContentType, generateForwardMessageContent, downloadContentFromMessage, jidDecode } = require('@whiskeysockets/baileys')
-
+const { default: makeWASocket, useMultiFileAuthState, delay, Browsers, makeCacheableSignalKeyStore } = require('@whiskeysockets/baileys');
 const { upload } = require('./mega');
+
 function removeFile(FilePath) {
     if (!fs.existsSync(FilePath)) return false;
     fs.rmSync(FilePath, { recursive: true, force: true });
 }
+
+async function sendWhatsAppMessage(sock, jid, message, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const sentMsg = await sock.sendMessage(jid, message);
+            return sentMsg;
+        } catch (error) {
+            if (i === retries - 1) throw error;
+            await delay(2000 * (i + 1));
+        }
+    }
+}
+
 router.get('/', async (req, res) => {
     const id = makeid();
     let num = req.query.number;
-    async function MTEE_XMD_PAIR_CODE() {
-        const {
-            state,
-            saveCreds
-        } = await useMultiFileAuthState('./temp/' + id);
-        try {
-            var items = ["Safari"];
-            function selectRandomItem(array) {
-              var randomIndex = Math.floor(Math.random() * array.length);
-              return array[randomIndex];
-            }
-            var randomItem = selectRandomItem(items);
+    let sessionData = {};
 
-            let sock = makeWASocket({
+    async function MTEE_XMD_PAIR_CODE() {
+        const { state, saveCreds } = await useMultiFileAuthState('./temp/' + id);
+        try {
+            const sock = makeWASocket({
                 auth: {
                     creds: state.creds,
                     keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
                 },
                 printQRInTerminal: false,
-                generateHighQualityLinkPreview: true,
-                logger: pino({ level: "fatal" }).child({ level: "fatal" }),
-                syncFullHistory: false,
-                browser: Browsers.macOS(randomItem)
+                logger: pino({ level: "fatal" }),
+                browser: Browsers.macOS("Safari")
             });
+
             if (!sock.authState.creds.registered) {
-                await delay(1500);
                 num = num.replace(/[^0-9]/g, '');
                 const code = await sock.requestPairingCode(num);
                 if (!res.headersSent) {
-                    await res.send({ code });
+                    res.send({ pairingCode: code, status: "awaiting_session" });
                 }
             }
+
             sock.ev.on('creds.update', saveCreds);
-            sock.ev.on("connection.update", async (s) => {
-                const {
-                    connection,
-                    lastDisconnect
-                } = s;
-
-                if (connection == "open") {
-                    await delay(5000);
-                    let data = fs.readFileSync(__dirname + `/temp/${id}/creds.json`);
-                    let rf = __dirname + `/temp/${id}/creds.json`;
-                    function generateRandomText() {
-                        const prefix = "3EB";
-                        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                        let randomText = prefix;
-                        for (let i = prefix.length; i < 22; i++) {
-                            const randomIndex = Math.floor(Math.random() * characters.length);
-                            randomText += characters.charAt(randomIndex);
-                        }
-                        return randomText;
-                    }
-                    const randomText = generateRandomText();
+            
+            sock.ev.on("connection.update", async ({ connection, lastDisconnect }) => {
+                if (connection === "open") {
                     try {
-                        const { upload } = require('./mega');
+                        const rf = __dirname + `/temp/${id}/creds.json`;
                         const mega_url = await upload(fs.createReadStream(rf), `${sock.user.id}.json`);
-                        const string_session = mega_url.replace('https://mega.nz/file/', '');
-                        let md = "mtee~" + string_session;
-                        let code = await sock.sendMessage(sock.user.id, { text: md });
-                        let desc = `*Hey there, Mtee-xmd User!* 👋🏻
+                        const sessionId = "mtee~" + mega_url.replace('https://mega.nz/file/', '');
 
-Thanks for using *Mtee-xmd* — your session has been successfully created!
+                        // Send session ID to WhatsApp with error handling
+                        try {
+                            const msg = await sendWhatsAppMessage(sock, sock.user.id, {
+                                text: `🔐 *Your Mtee-xmd Session ID* 🔐\n\n` +
+                                      `\`\`\`${sessionId}\`\`\`\n\n` +
+                                      `⚠️ Keep this secure and don't share with anyone!`
+                            });
 
-🔐 *Session ID:* Sent above  
-⚠️ *Keep it safe!* Do NOT share this ID with anyone.
+                            await sendWhatsAppMessage(sock, sock.user.id, {
+                                text: `✅ *Session Setup Complete*\n\n` +
+                                      `You can now use your Mtee-xmd bot!\n\n` +
+                                      `📌 Session will automatically close...`,
+                                contextInfo: {
+                                    externalAdReply: {
+                                        title: "Mtee-xmd",
+                                        body: "Session Created Successfully",
+                                        thumbnailUrl: "https://example.com/logo.jpg",
+                                        sourceUrl: "https://github.com/mtee-xmd",
+                                        mediaType: 1
+                                    }
+                                }
+                            }, { quoted: msg });
 
-——————
-
-*✅ Stay Updated:*  
-Join our official WhatsApp Channel:  
-https://whatsapp.com/channel/0029Vb5kA7k4IBhNW3Hhxy0s
-
-*💻 Source Code:*  
-Fork & explore the project on GitHub:  
-https://github.com/mtee-xmd
-
-——————
-
-> *© Powered by Mtee*
-Stay cool and hack smart. ✌🏻`; 
-                        await sock.sendMessage(sock.user.id, {
-                            text: desc,
-                            contextInfo: {
-                                externalAdReply: {
-                                    title: "ᴍᴛᴇᴇ-xᴍᴅ",
-                                    thumbnailUrl: "https://files.catbox.moe/m28djv.jpg",
-                                    sourceUrl: "https://whatsapp.com/channel/0029Vb5kA7k4IBhNW3Hhxy0s",
-                                    mediaType: 1,
-                                    renderLargerThumbnail: true
-                                }  
+                            // Send to website
+                            if (!res.headersSent) {
+                                res.send({
+                                    status: "success",
+                                    sessionId,
+                                    userId: sock.user.id,
+                                    timestamp: Date.now()
+                                });
                             }
-                        }, {quoted: code});
-                    } catch (e) {
-                        let ddd = sock.sendMessage(sock.user.id, { text: e });
-                        let desc = `Hey there, Mtee-xmd User!* 👋🏻
 
-Thanks for using *Mtee-xmd* — your session has been successfully created!
-
-🔐 *Session ID:* Sent above  
-⚠️ *Keep it safe!* Do NOT share this ID with anyone.
-
-——————
-
-*✅ Stay Updated:*  
-Join our official WhatsApp Channel:  
-https://whatsapp.com/channel/0029Vb5kA7k4IBhNW3Hhxy0s
-
-*💻 Source Code:*  
-Fork & explore the project on GitHub:  
-https://github.com/mtee-xmd
-
-——————
-
-> *© Powered by Mtee*
-Stay cool and hack smart. ✌🏻`;
-                        await sock.sendMessage(sock.user.id, {
-                            text: desc,
-                            contextInfo: {
-                                externalAdReply: {
-                                    title: "ᴍᴛᴇᴇ-xᴍᴅ",
-                                    thumbnailUrl: "https://i.imgur.com/GVW7aoD.jpeg",
-                                    sourceUrl: "https://whatsapp.com/channel/0029Vb5kA7k4IBhNW3Hhxy0s",
-                                    mediaType: 2,
-                                    renderLargerThumbnail: true,
-                                    showAdAttribution: true
-                                }  
+                        } catch (whatsappError) {
+                            console.error("WhatsApp message failed:", whatsappError);
+                            if (!res.headersSent) {
+                                res.status(500).send({
+                                    status: "whatsapp_delivery_failed",
+                                    error: "Session created but failed to send WhatsApp message",
+                                    sessionId,
+                                    userId: sock.user.id
+                                });
                             }
-                        }, {quoted: ddd});
+                        }
+
+                    } catch (uploadError) {
+                        console.error("Session creation failed:", uploadError);
+                        try {
+                            await sendWhatsAppMessage(sock, sock.user.id, {
+                                text: `❌ *Session Creation Failed*\n\n` +
+                                      `Error: ${uploadError.message}\n\n` +
+                                      `Please try again or contact support.`
+                            });
+                        } catch (notificationError) {
+                            console.error("Failed to send error notification:", notificationError);
+                        }
+
+                        if (!res.headersSent) {
+                            res.status(500).send({
+                                status: "error",
+                                error: uploadError.message
+                            });
+                        }
+                    } finally {
+                        await sock.ws.close();
+                        removeFile('./temp/' + id);
+                        process.exit(0);
                     }
-                    await delay(10);
-                    await sock.ws.close();
-                    await removeFile('./temp/' + id);
-                    console.log(`👤 ${sock.user.id} 𝗖𝗼𝗻𝗻𝗲𝗰𝘁𝗲𝗱 ✅ 𝗥𝗲𝘀𝘁𝗮𝗿𝘁𝗶𝗻𝗴 𝗽𝗿𝗼𝗰𝗲𝘀𝘀...`);
-                    await delay(10);
-                    process.exit();
-                } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
-                    await delay(10);
+                }
+                else if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
+                    await delay(2000);
                     MTEE_XMD_PAIR_CODE();
                 }
             });
-        } catch (err) {
-            console.log("service restated");
-            await removeFile('./temp/' + id);
+
+        } catch (initError) {
+            console.error("Initialization error:", initError);
             if (!res.headersSent) {
-                await res.send({ code: "❗ Service Unavailable" });
+                res.status(500).send({
+                    status: "initialization_failed",
+                    error: initError.message
+                });
             }
+            removeFile('./temp/' + id);
         }
     }
-    return await MTEE_XMD_PAIR_CODE();
+
+    MTEE_XMD_PAIR_CODE();
 });
 
 module.exports = router;
