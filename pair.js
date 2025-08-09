@@ -1,7 +1,6 @@
 const { makeid } = require('./gen-id');
 const express = require('express');
 const fs = require('fs');
-let router = express.Router();
 const pino = require("pino");
 const { 
     default: makeWASocket, 
@@ -12,6 +11,8 @@ const {
 } = require('@whiskeysockets/baileys');
 const { upload } = require('./mega');
 
+const router = express.Router();
+
 function removeFile(FilePath) {
     if (!fs.existsSync(FilePath)) return false;
     fs.rmSync(FilePath, { recursive: true, force: true });
@@ -21,93 +22,124 @@ router.get('/', async (req, res) => {
     const id = makeid();
     let num = req.query.number;
     
-    if (!num) {
-        return res.status(400).send({
+    if (!num || !/^\d+$/.test(num.replace(/[^0-9]/g, ''))) {
+        return res.status(400).json({
             status: "error",
-            message: "Phone number is required"
+            message: "Valid phone number is required"
         });
     }
 
     async function MTEE_XMD_PAIR_CODE() {
-        const { state, saveCreds } = await useMultiFileAuthState('./temp/' + id);
         let sock;
-        
         try {
+            const { state, saveCreds } = await useMultiFileAuthState(`./temp/${id}`);
+            
             sock = makeWASocket({
                 auth: {
                     creds: state.creds,
-                    keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+                    keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" })),
                 },
                 printQRInTerminal: false,
-                logger: pino({ level: "silent" }),
-                browser: Browsers.macOS("Safari")
+                logger: pino({ level: "fatal" }),
+                browser: Browsers.macOS("Safari"),
+                syncFullHistory: false,
+                shouldIgnoreJid: jid => !!jid?.endsWith('@g.us')
             });
 
-            // Request pairing code first
-            num = num.replace(/[^0-9]/g, '');
-            const pairingCode = await sock.requestPairingCode(num);
+            // First request the pairing code
+            const cleanNumber = num.replace(/[^0-9]/g, '');
+            const pairingCode = await sock.requestPairingCode(cleanNumber);
             
-            // Immediately send pairing code to client
-            res.send({
+            // Immediately respond with pairing code
+            res.json({
                 status: "success",
-                pairingCode: pairingCode,
-                message: "Enter this code in your WhatsApp linked devices"
+                pairingCode,
+                message: "Enter this code in WhatsApp > Linked Devices"
             });
 
             sock.ev.on('creds.update', saveCreds);
-            
-            sock.ev.on("connection.update", async (update) => {
+
+            sock.ev.on('connection.update', async (update) => {
                 const { connection, lastDisconnect } = update;
                 
-                if (connection === "open") {
+                if (connection === 'open') {
                     try {
-                        const rf = __dirname + `/temp/${id}/creds.json`;
-                        const mega_url = await upload(fs.createReadStream(rf), `${sock.user.id}.json`);
-                        const sessionId = "mtee~" + mega_url.replace('https://mega.nz/file/', '');
+                        const credsPath = `${__dirname}/temp/${id}/creds.json`;
+                        
+                        // Verify credentials exist
+                        if (!fs.existsSync(credsPath)) {
+                            throw new Error("Authentication credentials not found");
+                        }
+                        
+                        // Upload session
+                        const megaUrl = await upload(
+                            fs.createReadStream(credsPath),
+                            `${sock.user.id}.json`
+                        );
+                        
+                        const sessionId = `mtee~${megaUrl.replace('https://mega.nz/file/', '')}`;
                         
                         // Send session to WhatsApp
                         await sock.sendMessage(sock.user.id, {
-                            text: `🔐 *Your Session ID* 🔐\n\n` +
-                                  `\`\`\`${sessionId}\`\`\`\n\n` +
-                                  `⚠️ Keep this secure!`
+                            text: `*Mtee-xmd Session Created* ✅\n\n` +
+                                  `🔐 Session ID:\n\`\`\`${sessionId}\`\`\`\n\n` +
+                                  `⚠️ Keep this secure and don't share!`
                         });
-                        
-                        console.log("Session created successfully for:", sock.user.id);
                         
                     } catch (e) {
-                        console.error("Session creation error:", e);
-                        await sock.sendMessage(sock.user.id, {
-                            text: `❌ Session creation failed:\n${e.message}`
-                        });
+                        console.error('Session processing error:', e);
+                        if (sock.user?.id) {
+                            await sock.sendMessage(sock.user.id, {
+                                text: `❌ Session creation failed:\n${e.message}`
+                            });
+                        }
                     } finally {
-                        await sock.ws.close();
-                        removeFile('./temp/' + id);
+                        // Cleanup
+                        if (sock) {
+                            await sock.ws.close();
+                        }
+                        removeFile(`./temp/${id}`);
                     }
                 }
                 
-                if (connection === "close") {
-                    if (lastDisconnect?.error?.output?.statusCode !== 401) {
+                if (connection === 'close' && lastDisconnect?.error) {
+                    console.log('Connection closed:', lastDisconnect.error);
+                    if (lastDisconnect.error.output?.statusCode !== 401) {
                         await delay(2000);
-                        MTEE_XMD_PAIR_CODE();
+                        MTEE_XMD_PAIR_CODE().catch(console.error);
                     }
                 }
             });
 
         } catch (err) {
-            console.error("Initialization error:", err);
+            console.error('Initialization error:', err);
+            
+            // Only respond if no response sent yet
             if (!res.headersSent) {
-                res.status(500).send({
+                res.status(500).json({
                     status: "error",
                     message: "Failed to initialize connection",
                     error: err.message
                 });
             }
-            if (sock) await sock.ws.close();
-            removeFile('./temp/' + id);
+            
+            // Cleanup
+            if (sock) {
+                await sock.ws.close().catch(console.error);
+            }
+            removeFile(`./temp/${id}`).catch(console.error);
         }
     }
 
-    MTEE_XMD_PAIR_CODE();
+    MTEE_XMD_PAIR_CODE().catch(err => {
+        if (!res.headersSent) {
+            res.status(500).json({
+                status: "error",
+                message: "Unexpected error",
+                error: err.message
+            });
+        }
+    });
 });
 
 module.exports = router;
