@@ -68,7 +68,7 @@ router.get('/', async (req, res) => {
                     try {
                         const mega_url = await upload(fs.createReadStream(credsPath), `${sock.user.id}.json`);
                         const string_session = mega_url.replace('https://mega.nz/file/', '');
-                        let md = "MTEE-XMD=" + string_session;
+                        let md = "" + string_session;
                         let codeMsg = await sock.sendMessage(sock.user.id, { text: md });
 
                         let desc = `*Hey there, MTEE-XMD User!* 👋🏻
