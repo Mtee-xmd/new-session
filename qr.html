@@ -1,178 +1,262 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1737874207490861"
-            crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> BLEURAINZ QR sᴄᴀɴ sᴇssɪᴏɴ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&amp;display=swap" rel="stylesheet">
-    <title>QR</title>
+    <title>BLEURAINZ QR Scan Session</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        .bg {
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-size: 400% 400%;
-            animation: AnimateBG 25s ease infinite;
-        }
-
-        @keyframes AnimateBG {
-            0% {
-                background-position: 0% 50%
-            }
-
-            50% {
-                background-position: 100% 50%
-            }
-
-            100% {
-                background-position: 0% 50%
-            }
-        }
-
         body {
             margin: 0;
             padding: 0;
-            font-family: "Outfit";
+            font-family: "Outfit", sans-serif;
             background: linear-gradient(-45deg, #4a90e2, #3ac569, #9b59b6, #e74c3c);
             background-size: 400% 400%;
-            animation: gradient 10s ease infinite;
+            animation: gradient 15s ease infinite;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            color: white;
         }
 
         @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        jsl.code {
-            overflow: hidden;
-            background: linear-gradient(-45deg, #f1c40f, #3498db, #2ecc71, #e74c3c);
-            background-size: 400% 400%;
-            animation: gradient 8s ease infinite;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            font-family: 'Montserrat', sans-serif;
-            height: 110vh;
-            margin: 0px;
-
-        }
-
-        p.legend {
-            color: #fff;
-            font-size: 1em;
-            font-weight: 400;
-            padding: 0em 1.1em;
-            margin-top: 0.1em;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-
-        :root {
-            --main-color: hsl(212, 45%, 89%);
-            --principalText-color: hsl(218, 44%, 22%);
-            --secondText-color: hsl(220, 15%, 55%);
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         #content {
             display: flex;
             flex-direction: column;
-            width: 22rem;
+            width: 90%;
+            max-width: 350px;
             text-align: center;
-            background-color: #000000;
-            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 1.5rem;
             border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
         }
 
-        #QR-content img {
+        #QR-content {
+            margin-bottom: 1.5rem;
+        }
+
+        #qr-image {
             border-radius: 10px;
-            width: 20rem;
+            width: 100%;
+            height: auto;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         #title-container {
-            padding: 1rem 1rem 0 1rem;
-            color: #fff;
-            font-weight: 700;
             margin-bottom: 1rem;
         }
 
-        #description-container {
-            padding: 0 2.5rem 0 2.5rem;
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
             color: #fff;
-            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        #p-legend {
-            font-size: 1em;
-            font-weight: 400;
-            padding: 0em 1.1em;
-            margin-top: 0.1em;
+        .legend {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+
+        progress {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+
+        progress::-webkit-progress-bar {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        progress::-webkit-progress-value {
+            background: linear-gradient(to right, #3498db, #2ecc71);
+            border-radius: 4px;
+            transition: all 0.3s ease;
         }
 
         .reload-button {
             display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db; /* Blue color */
-            color: #fff; /* White text color */
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #3498db, #2ecc71);
+            color: white;
             text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+            border-radius: 30px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
         }
 
         .reload-button:hover {
-            background-color: #2980b9; /* Darker blue color on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(135deg, #2ecc71, #3498db);
+        }
+
+        .status-message {
+            margin: 1rem 0;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 700;
+            display: none;
+        }
+
+        .expired {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            display: block;
+        }
+
+        .success {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            #content {
+                width: 95%;
+                padding: 1rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
         }
     </style>
-    <script>
-        var timeleft = 30;
-        var downloadTimer = setInterval(function () {
-            if (timeleft <= 0) {
-                clearInterval(downloadTimer);
-                document.getElementById("progressBar").remove();
-                document.getElementById("main").innerHTML = "QR Expired! Please reload";
-                document.getElementById("legend").innerHTML = ""
-            }
-            document.getElementById("progressBar").value = 30 - timeleft;
-            timeleft -= 1;
-        }, 1000);
-    </script>
 </head>
 <body>
-<div class="bg">
     <div id="content">
         <div id="QR-content">
             <img id="qr-image" src="/server" alt="QR CODE">
         </div>
         <div id="title-container">
-            <h2 id="main"> BLEURAINZ ǫʀ ᴄᴏᴅᴇ</h2>
-            <p class="legend" id="legend">Scan The QR Code</p>
+            <h2>BLEURAINZ QR CODE</h2>
+            <p class="legend" id="legend">Scan the QR code within <span id="countdown">30</span> seconds</p>
         </div>
-        <div id="description-container">
-            <p id="semi" class="legend"></p>
-            <progress value="0" max="30" id="progressBar"></progress>
-        </div>
-        <a href="javascript:history.go(0)" class="reload-button">Reload Page</a>
+        <div id="status-message" class="status-message"></div>
+        <progress value="30" max="30" id="progressBar"></progress>
+        <button id="reload-btn" class="reload-button">Refresh QR Code</button>
     </div>
-</div>
+
+    <script>
+        // Enhanced QR Code Scanner with WebSocket support
+        document.addEventListener('DOMContentLoaded', function() {
+            const qrImage = document.getElementById('qr-image');
+            const progressBar = document.getElementById('progressBar');
+            const countdownEl = document.getElementById('countdown');
+            const reloadBtn = document.getElementById('reload-btn');
+            const statusMessage = document.getElementById('status-message');
+            const legend = document.getElementById('legend');
+            
+            let timeleft = 30;
+            let timer;
+            let ws;
+
+            // Initialize WebSocket connection
+            function initWebSocket() {
+                ws = new WebSocket(`wss://${window.location.host}/ws`);
+                
+                ws.onopen = function() {
+                    console.log('WebSocket connection established');
+                };
+                
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    if (data.status === 'success') {
+                        handleSuccess(data.message);
+                    } else if (data.status === 'error') {
+                        handleError(data.message);
+                    }
+                };
+                
+                ws.onclose = function() {
+                    console.log('WebSocket connection closed');
+                    // Attempt to reconnect after 2 seconds
+                    setTimeout(initWebSocket, 2000);
+                };
+            }
+            
+            // Start the countdown timer
+            function startTimer() {
+                clearInterval(timer);
+                timeleft = 30;
+                progressBar.value = timeleft;
+                countdownEl.textContent = timeleft;
+                
+                timer = setInterval(function() {
+                    timeleft--;
+                    progressBar.value = timeleft;
+                    countdownEl.textContent = timeleft;
+                    
+                    if (timeleft <= 0) {
+                        clearInterval(timer);
+                        handleExpiration();
+                    }
+                }, 1000);
+            }
+            
+            // Handle QR code expiration
+            function handleExpiration() {
+                statusMessage.textContent = "QR Code expired! Please refresh.";
+                statusMessage.className = "status-message expired";
+                legend.style.display = "none";
+            }
+            
+            // Handle successful scan
+            function handleSuccess(message) {
+                clearInterval(timer);
+                statusMessage.textContent = message || "Successfully connected!";
+                statusMessage.className = "status-message success";
+                progressBar.style.display = "none";
+                countdownEl.style.display = "none";
+                reloadBtn.textContent = "Done";
+            }
+            
+            // Handle errors
+            function handleError(message) {
+                statusMessage.textContent = message || "An error occurred";
+                statusMessage.className = "status-message expired";
+            }
+            
+            // Refresh QR code
+            function refreshQR() {
+                // Add cache busting parameter
+                qrImage.src = `/server?t=${new Date().getTime()}`;
+                statusMessage.textContent = "";
+                statusMessage.className = "status-message";
+                legend.style.display = "block";
+                progressBar.style.display = "block";
+                countdownEl.style.display = "inline";
+                reloadBtn.textContent = "Refresh QR Code";
+                startTimer();
+            }
+            
+            // Event listeners
+            reloadBtn.addEventListener('click', refreshQR);
+            
+            // Initialize
+            initWebSocket();
+            startTimer();
+            
+            // Check QR code loading
+            qrImage.onerror = function() {
+                handleError("Failed to load QR code. Please refresh.");
+            };
+        });
+    </script>
 </body>
 </html>
