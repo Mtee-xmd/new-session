@@ -1,29 +1,38 @@
 const express = require('express');
+const path = require('path');
+const bodyParser = require('body-parser');
+
 const app = express();
-__path = process.cwd()
-const bodyParser = require("body-parser");
+const __path = process.cwd();
 const PORT = process.env.PORT || 8000;
-let server = require('./qr'),
-    code = require('./pair');
+
+let server = require('./qr');
+let code = require('./pair');
+
 require('events').EventEmitter.defaultMaxListeners = 500;
-app.use('/server', server);
-app.use('/code', code);
-app.use('/pair',async (req, res, next) => {
-res.sendFile(__path + '/pair.html')
-})
-app.use('/qr',async (req, res, next) => {
-res.sendFile(__path + '/qr.html')
-})
-app.use('/',async (req, res, next) => {
-res.sendFile(__path + '/main.html')
-})
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use('/server', server);
+app.use('/code', code);
+
+app.get('/pair', (req, res) => {
+  res.sendFile(path.join(__path, 'pair.html'));
+});
+
+app.get('/qr', (req, res) => {
+  res.sendFile(path.join(__path, 'qr.html'));
+});
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__path, 'main.html'));
+});
+
 app.listen(PORT, () => {
-    console.log(`
-Don't Forgot To Give Star PRINCESS-V4 
+  console.log(`
+Don't Forget To Give Star MTEE-XMD 
+Server running on http://localhost:${PORT}`);
+});
 
- Server running on http://localhost:` + PORT)
-})
-
-module.exports = app
+module.exports = app;
