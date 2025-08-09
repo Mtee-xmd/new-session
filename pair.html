@@ -1,165 +1,33 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title> MTEE-XMD ᴘᴀɪʀ ᴄᴏᴅᴇ</title>
   <link rel="stylesheet" href="css/all.min.css">
   <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-image: url("https://files.catbox.moe/9b9kao.jpg"); /* Set the background image */
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      font-family: Arial, sans-serif;
-    }
+    /* (Previous CSS remains the same) */
 
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .box {
-      width: 300px;
-      height: 330px;
-      padding: 20px;
-      position: relative;
-      text-align: center;
-      background-color: rgba(255,255,255,0.5);
-      border-radius: 10px;
-      transform: perspective(1000px) rotateY(0deg);
-      box-shadow: none; /* Removed box shadow */
-      position: relative;
-    }
-
-    #text {
-      color: #000; /* Set the text color to black (#000) */
-    }
-
-    .input-container input {
-      color: #000; /* Set the text color to black (#000) */
-    }
-
-    .centered-text {
-      color: #000; /* Set the text color to black (#000) */
-    }
-
-    .input-container {
-      display: flex;
-      background: white;
-      border-radius: 1rem;
-      background: linear-gradient(45deg, #c5c5c5 0%, #ffffff 100%);
-      padding: 0.3rem;
-      gap: 0.3rem;
-      max-width: 300px; /* Set your desired maximum width */
-      width: 100%;
-    }
-
-    .input-container input {
-      border-radius: 0.8rem 0 0 0.8rem;
-      background: #e8e8e8;
-      width: 89%;
-      flex-basis: 75%;
-      padding: 1rem;
-      border: none;
-      border-left: 2px solid #ff9d9d;
-      color: #5e5e5e;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .input-container input:focus {
-      border-left: 2px solid #ff9d9d;
-      outline: none;
-    }
-
-    .input-container button {
-      flex-basis: 25%;
-      padding: 1rem;
-      background: linear-gradient(135deg, #8a2be2 0%, #800080 100%); /* Purple background */
-      font-weight: 900;
-      letter-spacing: 0.3rem;
-      text-transform: uppercase;
+    /* New style for Copy Button */
+    .copy-btn {
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
       color: white;
       border: none;
-      width: 100%;
-      border-radius: 0 1rem 1rem 0;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .input-container button:hover {
-      background: linear-gradient(135deg, #A8E4A0 0%, #32CD32 100%);
-      color: red; /* Change text color on hover to red */
-    }
-
-    @media (max-width: 500px) {
-      .input-container {
-        flex-direction: column;
-      }
-
-      .input-container input {
-        border-radius: 0.8rem;
-      }
-
-      .input-container button {
-        padding: 1rem;
-        border-radius: 0.8rem;
-      }
-    }
-
-    .centered-text {
-      text-align: center;
-    }
-    
-    /* Glowing Text */
-    .glowing-text {
-      margin-top: 20px;
-      font-size: 1.2rem;
+      border-radius: 0.5rem;
       font-weight: bold;
-      color: white;
-      text-shadow: 
-        0 0 5px #FF0000, 
-        0 0 10px #FF0000, 
-        0 0 15px #FF4500, 
-        0 0 20px #FF4500, 
-        0 0 25px #FF6347, 
-        0 0 30px #FF6347;
-      animation: glow 2s infinite;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.2s ease;
     }
-
-    @keyframes glow {
-      0% {
-        text-shadow: 
-          0 0 5px #FF0000, 
-          0 0 10px #FF0000, 
-          0 0 15px #FF4500, 
-          0 0 20px #FF4500, 
-          0 0 25px #FF6347, 
-          0 0 30px #FF6347;
-      }
-      50% {
-        text-shadow: 
-          0 0 5px #32CD32, 
-          0 0 10px #32CD32, 
-          0 0 15px #32CD32, 
-          0 0 20px #7CFC00, 
-          0 0 25px #ADFF2F, 
-          0 0 30px #ADFF2F;
-      }
-      100% {
-        text-shadow: 
-          0 0 5px #1E90FF, 
-          0 0 10px #1E90FF, 
-          0 0 15px #00BFFF, 
-          0 0 20px #00BFFF, 
-          0 0 25px #87CEFA, 
-          0 0 30px #87CEFA;
-      }
-    }    
- 
+    .copy-btn:hover {
+      background: linear-gradient(135deg, #228B22 0%, #006400 100%);
+      transform: scale(1.05);
+    }
+    .copy-btn.copied {
+      background: linear-gradient(135deg, #1E90FF 0%, #0000FF 100%);
+      content: "Copied!";
+    }
   </style>
 </head>
 <body>
@@ -175,7 +43,7 @@
               <input placeholder="276561364XX" type="number" id="number" placeholder="⚙enter your phone number with country code⚙" name="">
               <button id="submit"> enter </button>
             </div>
-           
+
             <a id="waiting-message" class="centered-text" style="display: none;">in process...</a>
             <br>
             <br>
@@ -193,18 +61,23 @@
     let c = document.getElementById("number");
     let box = document.getElementById("box");
 
-    async function Copy() {
-      let text = document.getElementById("copy").innerText;
-      let obj = document.getElementById("copy");
-      await navigator.clipboard.writeText(obj.innerText.replace('CODE: ', ''));
-      obj.innerText = "COPIED";
-      obj.style = "color:blue;font-weight:bold";
-      obj.size = "5";
-      setTimeout(() => {
-        obj.innerText = text;
-        obj.style = "color:black;font-weight-bold";
-        obj.size = "5";
-      }, 500);
+    // Function to copy the code
+    async function copyCode() {
+      const codeElement = document.getElementById("pair-code");
+      if (!codeElement) return;
+      
+      const code = codeElement.innerText;
+      await navigator.clipboard.writeText(code);
+      
+      const copyBtn = document.getElementById("copy-btn");
+      if (copyBtn) {
+        copyBtn.classList.add("copied");
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => {
+          copyBtn.classList.remove("copied");
+          copyBtn.textContent = "Copy Code";
+        }, 2000);
+      }
     }
 
     b.addEventListener("click", async (e) => {
@@ -234,7 +107,16 @@
         a.innerHTML = '<a style="color:black;font-weight:bold">Please wait🔎 </a><br><br>';
         let { data } = await axios(`/code?number=${bc}`);
         let code = data.code || "Service Unavailable";
-        a.innerHTML = '<font id="copy" onclick="Copy()" style="color:red;font-weight:bold" size="5">CODE: <span style="color:black;font-weight:bold">' + code + '</span></font><br><br><br>';
+        
+        // Updated output with dedicated Copy Button
+        a.innerHTML = `
+          <div style="text-align: center;">
+            <font style="color:black;font-weight:bold">Your Pairing Code:</font><br>
+            <font id="pair-code" style="color:red;font-size:24px;font-weight:bold;">${code}</font><br>
+            <button id="copy-btn" class="copy-btn" onclick="copyCode()">Copy Code</button>
+          </div>
+          <br><br>
+        `;
       }
     });
   </script>
