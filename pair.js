@@ -11,15 +11,19 @@ const {
 } = require('@whiskeysockets/baileys');
 
 const router = express.Router();
+
+// Simplified logger configuration
 const logger = pino({
     level: 'debug',
     transport: {
-        target: 'pino-pretty',
-        options: {
-            colorize: true,
-            translateTime: true
-        }
+        target: 'pino/file',
+        options: { destination: './logs/app.log' }
     }
+});
+
+// Fallback to basic logger if file transport fails
+const consoleLogger = pino({
+    level: 'debug'
 });
 
 // Session management
@@ -38,10 +42,15 @@ async function cleanupSession(id) {
     }
 }
 
-// Connection manager
+// Ensure logs directory exists
+if (!fs.existsSync('./logs')) {
+    fs.mkdirSync('./logs');
+}
+
+// Connection manager class
 class ConnectionManager {
     constructor() {
-        this.retryDelays = [2000, 5000, 10000]; // Progressive delays
+        this.retryDelays = [2000, 5000, 10000];
     }
 
     async createConnection(sessionId, number) {
@@ -54,31 +63,24 @@ class ConnectionManager {
                 const sock = makeWASocket({
                     auth: {
                         creds: state.creds,
-                        keys: makeCacheableSignalKeyStore(state.keys, logger),
+                        keys: makeCacheableSignalKeyStore(state.keys, consoleLogger),
                     },
-                    logger: logger.child({ session: sessionId }),
+                    logger: consoleLogger.child({ session: sessionId }),
                     printQRInTerminal: false,
                     browser: Browsers.macOS("Safari"),
                     connectTimeoutMs: 30000,
                     keepAliveIntervalMs: 25000,
                     maxRetries: 3,
-                    version: [2, 2413, 1],
-                    getMessage: async () => ({})
+                    version: [2, 2413, 1]
                 });
 
-                // Setup event handlers
                 sock.ev.on('creds.update', saveCreds);
                 
                 sock.ev.on('connection.update', (update) => {
-                    logger.debug(`Connection update: ${JSON.stringify(update)}`);
-                    
-                    if (update.connection === 'close') {
-                        this.handleDisconnect(sessionId, sock, update.lastDisconnect?.error);
-                    }
+                    this.handleConnectionUpdate(sessionId, sock, update);
                 });
 
-                // Request pairing code
-                const pairingCode = await this.requestPairingCodeWithRetry(sock, number);
+                const pairingCode = await this.requestPairingCode(sock, number);
                 
                 return {
                     sock,
@@ -98,7 +100,7 @@ class ConnectionManager {
         }
     }
 
-    async requestPairingCodeWithRetry(sock, number, retries = 3) {
+    async requestPairingCode(sock, number, retries = 3) {
         for (let i = 0; i < retries; i++) {
             try {
                 return await sock.requestPairingCode(number);
@@ -106,6 +108,14 @@ class ConnectionManager {
                 if (i === retries - 1) throw err;
                 await delay(2000 * (i + 1));
             }
+        }
+    }
+
+    handleConnectionUpdate(sessionId, sock, update) {
+        logger.debug(`Connection update: ${JSON.stringify(update)}`);
+        
+        if (update.connection === 'close') {
+            this.handleDisconnect(sessionId, sock, update.lastDisconnect?.error);
         }
     }
 
@@ -152,7 +162,6 @@ router.get('/', async (req, res) => {
             createdAt: Date.now()
         });
 
-        // Respond with pairing code
         res.json({
             status: "success",
             pairingCode,
@@ -160,19 +169,15 @@ router.get('/', async (req, res) => {
             message: "Enter this code in WhatsApp > Linked Devices"
         });
 
-        // Handle successful connection
         sock.ev.on('connection.update', async (update) => {
             if (update.connection === 'open') {
                 try {
                     logger.info(`Session ${sessionId} connected successfully`);
                     
-                    // Here you would add your session upload logic
-                    // and WhatsApp message sending code
+                    // Your session handling logic here
                     
-                } catch (e) {
-                    logger.error(`Post-connection error: ${e.message}`);
                 } finally {
-                    await delay(5000); // Keep connection briefly for messages
+                    await delay(5000);
                     await sock.ws.close();
                     await cleanupSession(sessionId);
                 }
@@ -202,6 +207,6 @@ setInterval(() => {
             cleanupSession(id);
         }
     });
-}, 60000); // Check every minute
+}, 60000);
 
 module.exports = router;
